@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Size Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .drop-zone {
+            border: 3px dashed #667eea;
+            border-radius: 16px;
+            padding: 60px 20px;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .drop-zone:hover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .drop-zone.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            transform: scale(1.02);
+        }
+
+        .drop-zone-small {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .drop-zone-small:hover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .drop-zone-small.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            transform: scale(1.01);
+        }
+
+        .drop-icon {
+            font-size: 4em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone-small .drop-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .drop-text {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .drop-zone-small .drop-text {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .drop-hint {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .drop-zone-small .drop-hint {
+            font-size: 0.8em;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .file-info {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .file-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+
+        .file-type {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .size-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .size-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .size-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .size-card.windows {
+            border-color: #0078d4;
+        }
+
+        .size-card.macos {
+            border-color: #007aff;
+        }
+
+        .platform-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .windows .platform-icon {
+            color: #0078d4;
+        }
+
+        .macos .platform-icon {
+            color: #007aff;
+        }
+
+        .platform-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .platform-description {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .size-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .size-bytes {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .size-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 File Size Calculator</h1>
+        
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-icon">⬇️</div>
+            <div class="drop-text">Drop your file here</div>
+            <div class="drop-hint">or click to browse</div>
+        </div>
+        
+        <input type="file" id="fileInput" class="file-input">
+        
+        <div class="results" id="results">
+            <div class="drop-zone-small" id="dropZoneSmall">
+                <div class="drop-icon">⬇️</div>
+                <div class="drop-text">Drop another file here</div>
+                <div class="drop-hint">or click to browse</div>
+            </div>
+            
+            <div class="file-info" id="fileInfo">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-type" id="fileType"></div>
+            </div>
+            
+            <div class="size-cards">
+                <div class="size-card windows">
+                    <div class="platform-icon">🪟</div>
+                    <div class="platform-name">Windows</div>
+                    <div class="platform-description">Binary (1024-based)</div>
+                    <div class="size-value" id="windowsSize"></div>
+                    <div class="size-bytes" id="windowsBytes"></div>
+                </div>
+                
+                <div class="size-card macos">
+                    <div class="platform-icon">🍎</div>
+                    <div class="platform-name">macOS</div>
+                    <div class="platform-description">Decimal (1000-based)</div>
+                    <div class="size-value" id="macosSize"></div>
+                    <div class="size-bytes" id="macosBytes"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const dropZoneSmall = document.getElementById('dropZoneSmall');
+        const fileInput = document.getElementById('fileInput');
+        const results = document.getElementById('results');
+        
+        // Setup drag and drop for any element
+        function setupDropZone(element) {
+            // Click to browse
+            element.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Drag and drop events
+            element.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                element.classList.add('dragover');
+            });
+            
+            element.addEventListener('dragleave', () => {
+                element.classList.remove('dragover');
+            });
+            
+            element.addEventListener('drop', (e) => {
+                e.preventDefault();
+                element.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+        }
+        
+        // Initialize both drop zones
+        setupDropZone(dropZone);
+        setupDropZone(dropZoneSmall);
+        
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            const size = file.size;
+            
+            // Update file info
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileType').textContent = `${file.type || 'Unknown type'} • ${formatBytes(size)} bytes`;
+            
+            // Calculate Windows sizes (binary - 1024-based)
+            const windowsSizes = calculateSizes(size, 1024);
+            document.getElementById('windowsSize').textContent = windowsSizes.display;
+            document.getElementById('windowsBytes').textContent = `${size.toLocaleString()} bytes`;
+            
+            // Calculate macOS sizes (decimal - 1000-based)
+            const macosSizes = calculateSizes(size, 1000);
+            document.getElementById('macosSize').textContent = macosSizes.display;
+            document.getElementById('macosBytes').textContent = `${size.toLocaleString()} bytes`;
+            
+            // Show results and hide main drop zone
+            results.style.display = 'block';
+            dropZone.style.display = 'none';
+        }
+        
+        function calculateSizes(bytes, base) {
+            if (bytes === 0) return { display: '0 B' };
+            
+            const units = base === 1024 
+                ? ['B', 'KiB', 'MiB', 'GiB', 'TiB'] 
+                : ['B', 'KB', 'MB', 'GB', 'TB'];
+            
+            const i = Math.floor(Math.log(bytes) / Math.log(base));
+            const size = bytes / Math.pow(base, i);
+            
+            if (i === 0) {
+                return { display: `${size} ${units[i]}` };
+            }
+            
+            return { 
+                display: `${size.toFixed(2)} ${units[i]}`
+            };
+        }
+        
+        function formatBytes(bytes) {
+            return bytes.toLocaleString();
+        }
+    </script>
+</body>
+</html>
